@@ -80,7 +80,7 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
     private Duration _maxInactiveTime;
     private boolean _useLocking;
 
-    /**I'
+    /**
      * Instantiates the ScaleOutSessionRepository.
      * @param cacheName the cache name to store {@link org.springframework.session.soss.ScaleoutSession}s
      * @param maxInactiveTime the max inactive time of a session

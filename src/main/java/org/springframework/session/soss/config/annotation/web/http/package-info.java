@@ -14,6 +14,6 @@
  limitations under the License.
 */
 /**
- * Provides autowired configuration support for a SessionRepository implementation backed by ScaleOut StateServer
+ * Provides autowired configuration support for a SessionRepository implementation backed by ScaleOut StateServer.
  */
 package org.springframework.session.soss.config.annotation.web.http;

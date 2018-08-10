@@ -14,7 +14,7 @@
  limitations under the License.
 */
 /**
- * Provides a SessionRepository implementation backed by ScaleOut StateServer
+ * Provides a SessionRepository implementation backed by ScaleOut StateServer.
  */
 package org.springframework.session.soss;
 

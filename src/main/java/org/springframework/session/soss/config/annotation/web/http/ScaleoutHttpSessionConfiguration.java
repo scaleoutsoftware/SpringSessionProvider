@@ -43,7 +43,7 @@ public class ScaleoutHttpSessionConfiguration extends SpringHttpSessionConfigura
 
     /**
      * Returns a new ScaleOutSessionRepository with default parameters or parameters assigned during import.
-     * @return a new ScaleOutSessionRepository.
+     * @return a new ScaleOutSessionRepository
      */
     @Bean
     public ScaleoutSessionRepository sessionRepository() {
@@ -54,7 +54,7 @@ public class ScaleoutHttpSessionConfiguration extends SpringHttpSessionConfigura
 
     /**
      * Imports metadata from the EnableScaleoutHttpSession class.
-     * @param importMetadata the annotation metadata to pull info from.
+     * @param importMetadata the annotation metadata to pull info from
      */
     @Override
     public void setImportMetadata(AnnotationMetadata importMetadata) {

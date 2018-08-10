@@ -60,7 +60,13 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
     private static final String SPRING_SECURITY_CONTEXT = "SPRING_SECURITY_CONTEXT";
 
     // reasonable defaults for a session repository
+    /**
+     * Default namespace to store sessions.
+     */
     public static final String DEF_CACHE_NAME = "SpringSessionRepo";
+    /**
+     * Default locking value.
+     */
     public static final boolean DEF_USE_LOCKING = true;
 
     // the NamedCache to use for query
@@ -74,11 +80,11 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
     private Duration _maxInactiveTime;
     private boolean _useLocking;
 
-    /**
+    /**I'
      * Instantiates the ScaleOutSessionRepository.
-     * @param cacheName the cache name to store {@link org.springframework.session.soss.ScaleoutSession}'s
+     * @param cacheName the cache name to store {@link org.springframework.session.soss.ScaleoutSession}s
      * @param maxInactiveTime the max inactive time of a session
-     * @param useLocking if the scaleout repository is using locking.
+     * @param useLocking if the scaleout repository is using locking
      */
     public ScaleoutSessionRepository(String cacheName, Duration maxInactiveTime, boolean useLocking) {
         _maxInactiveTime = maxInactiveTime;
@@ -106,7 +112,7 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
 
     /**
      * Creates a new ScaleOut session.
-     * @return a new ScaleOut Session.
+     * @return a new ScaleOut Session
      */
     @Override
 	public ScaleoutSession createSession() {
@@ -114,8 +120,8 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
 	}
 
     /**
-     * Saves a {@link org.springframework.session.soss.ScaleoutSession}
-     * @param session the session to save.
+     * Saves a {@link org.springframework.session.soss.ScaleoutSession}.
+     * @param session the session to save
      */
 	@Override
 	public void save(ScaleoutSession session) {
@@ -133,9 +139,9 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
     }
 
     /**
-     * Finds a session based on the session id or NULL if no {@link org.springframework.session.soss.ScaleoutSession} with that ID exists. .
-     * @param id the id of the session to find.
-     * @return the associated {@link org.springframework.session.soss.ScaleoutSession} with the parameter id or NULL.
+     * Finds a session based on the session id or null if no {@link org.springframework.session.soss.ScaleoutSession} with that ID exists.
+     * @param id the id of the session to find
+     * @return the associated {@link org.springframework.session.soss.ScaleoutSession} with the parameter id or NULL
      */
     @Override
     public ScaleoutSession findById(String id) {
@@ -146,7 +152,7 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
     /**
      * Deletes a {@link org.springframework.session.soss.ScaleoutSession} from the
      * configured NamedCache with the parameter session id.
-     * @param id the session id to delete.
+     * @param id the session id to delete
      */
     @Override
     public void deleteById(String id) {
@@ -155,10 +161,10 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
     }
 
     /**
-     * Retrieves a HashMap correlating session IDs to {@link org.springframework.session.soss.ScaleoutSession}
+     * Retrieves a HashMap correlating session IDs to {@link org.springframework.session.soss.ScaleoutSession}.
      * @param indexName the principal name
      * @param indexValue the desired value
-     * @return a hashmap containing all sessions associated with the configured index name and parameter index value or an empty map.
+     * @return a hashmap containing all sessions associated with the configured index name and parameter index value or an empty map
      */
     @Override
     public Map<String, ScaleoutSession> findByIndexNameAndIndexValue(String indexName, String indexValue) {
@@ -410,7 +416,7 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
 
     /**
      * Static helper class to resolve the PRINCIPAL_NAME_INDEX_NAME OR SPRING_SECURITY_CONTEXT. This class is used to
-     * set the principal name (annotated SossIndexAttribute method) in {@link org.springframework.session.soss.ScaleoutSession}
+     * set the principal name (annotated SossIndexAttribute method) in {@link org.springframework.session.soss.ScaleoutSession}.
      */
     static class PrincipalNameResolver {
         private SpelExpressionParser parser = new SpelExpressionParser();

@@ -34,7 +34,10 @@ import java.util.*;
  */
 public class ScaleoutSession implements Session, Serializable {
 	private static final Log logger = LogFactory.getLog(ScaleoutSessionRepository.class);
-	// default inactive time in minutes for a session
+
+	/**
+	 * Default inactive time in minutes for a session.
+	 */
 	public final static int DEF_MAX_INACTIVE_TIME = 30;
 
 	// session attributes
@@ -54,7 +57,7 @@ public class ScaleoutSession implements Session, Serializable {
 
 	/**
 	 * Constructor for a ScaleoutSession.
-	 * @param lastAccessTime the last time the session was retrieved from the ScaleOut StateServer store.
+	 * @param lastAccessTime the last time the session was retrieved from the ScaleOut StateServer store
 	 * @param inactiveTime the maximum duration between current retrieval time and last access time before the session is removed
 	 */
 	ScaleoutSession(Instant lastAccessTime, Duration inactiveTime){
@@ -186,12 +189,11 @@ public class ScaleoutSession implements Session, Serializable {
 		return checkExpired.compareTo(Instant.now()) <= 0;
 	}
 
-	public boolean isNew() { return _isNew; }
+	boolean isNew() { return _isNew; }
 
-	public void markTouched() {
+	void markTouched() {
 		_isNew = false;
 	}
-
 
 	/**
 	 * Package private helper method which retrieves the old session identifiers that were previously associated with this session.

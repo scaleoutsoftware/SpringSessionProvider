@@ -40,14 +40,14 @@ public @interface EnableScaleoutHttpSession {
     int maxInactiveTimeMinutes() default ScaleoutSession.DEF_MAX_INACTIVE_TIME;
 
     /**
-     * Sets the NamedCache (namespace) name used by the ScaleoutSessionRepository
+     * Sets the NamedCache (namespace) name used by the ScaleoutSessionRepository.
      * @return the cache name to use
      */
     String cacheName() default ScaleoutSessionRepository.DEF_CACHE_NAME;
 
     /**
-     * Sets whether or not to use locking
-     * @return the locking mode
+     * Sets whether or not to lock sessions on retrieval.
+     * @return whether or not to lock sessions on retrieval
      */
     boolean useLocking() default ScaleoutSessionRepository.DEF_USE_LOCKING;
 }

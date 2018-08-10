@@ -1,0 +1,2 @@
+org.springframework.session.soss
+org.springframework.session.soss.config.annotation.web.http

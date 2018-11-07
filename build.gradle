@@ -9,6 +9,9 @@ sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
+	maven {
+        url "https://repo.scaleoutsoftware.com/repository/external"
+    }
 }
 
 configurations {
@@ -30,18 +33,9 @@ dependencies {
     testCompile group: 'org.springframework', name: 'spring-context', version: '5.0.7.RELEASE'
     testCompile group: 'org.springframework', name: 'spring-web', version: '5.0.7.RELEASE'
     testCompile group: 'javax.servlet', name: 'javax.servlet-api', version: '4.0.1'
+	testCompile group: 'com.scaleoutsoftware', name: 'jnc', version: '5.8'
 	
-	// point the following test dependencies to the local SOSS installation folder
-    testCompile files('C:\\path\\to\\ScaleOut_Software\\StateServer\\JavaAPI\\lib\\concurrentlinkedhashmap-lru-1.4-soss-compat.jar')
-    testCompile files('C:\\path\\to\\ScaleOut_Software\\StateServer\\JavaAPI\\soss-jnc-5.7.jar')
-    testCompile files('C:\\path\\to\\ScaleOut_Software\\StateServer\\JavaAPI\\lib\\slf4j-log4j12-1.6.1.jar")
-    testCompile files('C:\\path\\to\\ScaleOut_Software\\StateServer\\JavaAPI\\lib\\slf4j-api-1.6.1.jar")
-    testCompile files('C:\\path\\to\\ScaleOut_Software\\StateServer\\JavaAPI\\lib\\log4j-1.2.16.jar")
-
-    // point the following dependencies to the local SOSS installation folder
-    compile files('C:\\path\\to\\ScaleOut_Software\\StateServer\\JavaAPI\\soss-jnc-5.7.jar')
-    compile files('C:\\path\\to\\ScaleOut_Software\\StateServer\\JavaAPI\\lib\\concurrentlinkedhashmap-lru-1.4-soss-compat.jar')
-	
+    compile group: 'com.scaleoutsoftware', name: 'jnc', version: '5.8'
     compile group: 'org.springframework.session', name: 'spring-session-core', version: '2.0.5.RELEASE'
     compile group: 'org.springframework', name: 'spring-context', version: '5.0.7.RELEASE'
     compile group: 'org.springframework', name: 'spring-web', version: '5.0.7.RELEASE'

@@ -38,8 +38,10 @@ public class ScaleoutHttpSessionConfiguration extends SpringHttpSessionConfigura
 
     // reasonable repository and session defaults.
     private String _cacheName       = ScaleoutSessionRepository.DEF_CACHE_NAME;
+    private String _remoteStoreName = null;
     private boolean _useLocking     = ScaleoutSessionRepository.DEF_USE_LOCKING;
     private int _maxInactiveTime    = ScaleoutSession.DEF_MAX_INACTIVE_TIME;
+
 
     /**
      * Returns a new ScaleOutSessionRepository with default parameters or parameters assigned during import.
@@ -48,8 +50,8 @@ public class ScaleoutHttpSessionConfiguration extends SpringHttpSessionConfigura
     @Bean
     public ScaleoutSessionRepository sessionRepository() {
         Duration maxInactive = Duration.ofMinutes(_maxInactiveTime);
-        ScaleoutSessionRepository repo = new ScaleoutSessionRepository(_cacheName, maxInactive, _useLocking);
-        return repo;
+
+        return new ScaleoutSessionRepository(_cacheName, maxInactive, _useLocking, _remoteStoreName);
     }
 
     /**
@@ -63,6 +65,6 @@ public class ScaleoutHttpSessionConfiguration extends SpringHttpSessionConfigura
         _cacheName = attributes.getString("cacheName");
         _maxInactiveTime = attributes.getNumber("maxInactiveTimeMinutes");
         _useLocking = attributes.getBoolean("useLocking");
-
+        _remoteStoreName = attributes.getString("remoteStoreName");
     }
 }

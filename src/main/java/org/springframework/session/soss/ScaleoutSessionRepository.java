@@ -36,6 +36,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -75,6 +76,7 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
     // helper objects for locking
     private ConcurrentHashMap<String, DataAccessor> _sessionAccessors;
     private HashSet<ReadOptions> _readOptions;
+    private CreatePolicy _createPolicy;
 
     // private member configuration variables
     private Duration _maxInactiveTime;
@@ -86,21 +88,39 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
      * @param maxInactiveTime the max inactive time of a session
      * @param useLocking if the scaleout repository is using locking
      */
-    public ScaleoutSessionRepository(String cacheName, Duration maxInactiveTime, boolean useLocking) {
+    public ScaleoutSessionRepository(String cacheName, Duration maxInactiveTime, boolean useLocking, String remoteStoreName) {
         _maxInactiveTime = maxInactiveTime;
         _useLocking = useLocking;
         _sessionAccessors = new ConcurrentHashMap<>();
 
-        // creates a new set of read options for a DataAccessor that uses locking
+        // setup a new create policy
+        _createPolicy = new CreatePolicy();
+        _createPolicy.setTimeout(TimeSpan.fromMinutes(maxInactiveTime.toMinutes()));
+        if(remoteStoreName != null) {
+            _createPolicy.setDefaultCoherencyPolicy(new NotifyCoherencyPolicy());
+        }
+
+        // setup a new set of read options for a DataAccessor that uses locking
         _readOptions = new HashSet<>();
         _readOptions.add(ReadOptions.ObjectMayNotExist); // don't throw "ObjectNotFound" exceptions -- return null.
         _readOptions.add(ReadOptions.ReturnCachedObjectIfValid); // use the client cache
+        if(remoteStoreName != null) {
+            _readOptions.add(ReadOptions.ReadRemoteObject);
+            _readOptions.add(ReadOptions.ReadRemoteSyncOnly);
+        }
+
         if(_useLocking)
             _readOptions.add(ReadOptions.LockObject); // if the object exists, lock the object
 
         try {
             _cache = CacheFactory.getCache(cacheName);
             StateServerKey.setDefaultAppId(StateServerKey.appNameToId(cacheName));
+            if(remoteStoreName != null) {
+                List<RemoteStore> stores = new LinkedList<>();
+                stores.add(new RemoteStore(remoteStoreName));
+                _cache.setRemoteStores(stores);
+            }
+
         } catch (StateServerException e) {
             logger.error("Couldn't create namespace.");
             throw new RuntimeException(e);
@@ -310,7 +330,8 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
         try {
             DataAccessor da = getDA(session.getId());
             session.markTouched();
-            da.create((int)_maxInactiveTime.toMinutes(), session);
+            if(da != null)
+                da.create(_createPolicy, session);
         } catch (ObjectExistsException oee) {
             logger.warn(oee);
             saveExistingSession(session);
@@ -348,9 +369,11 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
 
                 // it's always safe to call update and unlock even when locking is disabled or we don't have a lock ticket
                 try {
-                    da.update(session, true);
-                    removeSessionAccessor = true;
-                    break;
+                    if(da != null) {
+                        da.update(session, true);
+                        removeSessionAccessor = true;
+                        break;
+                    }
                 } catch(ObjectLockedException ole) { logger.warn("object locked, retrying."); }
             } while(true);
 

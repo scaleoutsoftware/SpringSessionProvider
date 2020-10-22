@@ -33,9 +33,9 @@ dependencies {
     testCompile group: 'org.springframework', name: 'spring-context', version: '5.0.7.RELEASE'
     testCompile group: 'org.springframework', name: 'spring-web', version: '5.0.7.RELEASE'
     testCompile group: 'javax.servlet', name: 'javax.servlet-api', version: '4.0.1'
-	testCompile group: 'com.scaleoutsoftware', name: 'jnc', version: '5.8'
+	testCompile group: 'com.scaleoutsoftware.client', name: 'jnc', version: '5.8.18.349'
 	
-    compile group: 'com.scaleoutsoftware', name: 'jnc', version: '5.8'
+    compile group: 'com.scaleoutsoftware.client', name: 'jnc', version: '5.8.18.349'
     compile group: 'org.springframework.session', name: 'spring-session-core', version: '2.0.5.RELEASE'
     compile group: 'org.springframework', name: 'spring-context', version: '5.0.7.RELEASE'
     compile group: 'org.springframework', name: 'spring-web', version: '5.0.7.RELEASE'

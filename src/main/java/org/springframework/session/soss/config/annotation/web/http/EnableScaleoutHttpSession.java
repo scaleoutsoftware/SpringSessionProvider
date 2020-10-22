@@ -50,4 +50,10 @@ public @interface EnableScaleoutHttpSession {
      * @return whether or not to lock sessions on retrieval
      */
     boolean useLocking() default ScaleoutSessionRepository.DEF_USE_LOCKING;
+
+    /**
+     * If GeoServer pro is licensed, ... TODO
+     * @return the remote store name (Must have GeoServer Pro licensed.)
+     */
+    String remoteStoreName();
 }

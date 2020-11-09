@@ -50,6 +50,45 @@ For Maven, you can add the ScaleOut API Repository to your pom.xml by adding the
 </dependencies>
 ```
 
+### Usage
+
+ScaleOut can be used a SessionRepository by using the ``` EnableScaleoutHttpSession ``` attribute.
+
+The attribute has six parameters:
+
+##### cacheName
+
+The ``` cacheName ``` parameter defines the ScaleOut namespace the ScaleoutSessionRepository will use for storing session objects.
+
+Default Value: ``` SpringSessionRepo ```
+
+#### maxInactiveTimeMinutes
+
+The ``` maxInactiveTimeMinutes ``` parameter defines the maximum allowed time that a session can exist before expiring. The timeout used is sliding, such that after every access (``` findById(id) ``` or ``` save(session) ```) the timeout is reset.
+
+Default value: ``` 30 ```
+
+#### useLocking
+
+The ``` useLocking ``` parameter tells the ScaleoutSessionRepository whether to lock Session's during access operations.
+
+Note, locking required if GeoServer pull enabled. 
+
+Default value: ``` true ``` 
+
+
+The following configuration parameter is only used if GeoServer pro is licensed and configured.
+
+#### remoteStoreName
+
+The ``` remoteStoreName ``` parameter tells the ScaleoutSessionRepository to create objects with the GeoServer notify policy and push creates and updates to a remote store with the parameter name.
+
+Note, the ``` useLocking ``` parameter must be set to true.
+
+Note, GeoServer pro licensed separately from ScaleOut StateServer.   
+
+Default value: ``` null (unused) ```
+
 This library is open source and has dependencies on other ScaleOut 
 Software products. 
 

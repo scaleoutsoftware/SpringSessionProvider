@@ -37,10 +37,12 @@ import java.util.Map;
 public class ScaleoutHttpSessionConfiguration extends SpringHttpSessionConfiguration implements ImportAware {
 
     // reasonable repository and session defaults.
-    private String _cacheName       = ScaleoutSessionRepository.DEF_CACHE_NAME;
-    private String _remoteStoreName = null;
-    private boolean _useLocking     = ScaleoutSessionRepository.DEF_USE_LOCKING;
-    private int _maxInactiveTime    = ScaleoutSession.DEF_MAX_INACTIVE_TIME;
+    private String _cacheName           = ScaleoutSessionRepository.DEF_CACHE_NAME;
+    private String _remoteStoreName     = null;
+    private boolean _useLocking         = ScaleoutSessionRepository.DEF_USE_LOCKING;
+    private int _maxInactiveTime        = ScaleoutSession.DEF_MAX_INACTIVE_TIME;
+    private int _maxRemoteRetries       = ScaleoutSessionRepository.DEF_REMOTE_READPENDING_RETRIES;
+    private int _remoteRetryInterval    = ScaleoutSessionRepository.DEF_REMOTE_READPENDING_RETRY_INTERVAL;
 
 
     /**
@@ -51,7 +53,7 @@ public class ScaleoutHttpSessionConfiguration extends SpringHttpSessionConfigura
     public ScaleoutSessionRepository sessionRepository() {
         Duration maxInactive = Duration.ofMinutes(_maxInactiveTime);
 
-        return new ScaleoutSessionRepository(_cacheName, maxInactive, _useLocking, _remoteStoreName);
+        return new ScaleoutSessionRepository(_cacheName, maxInactive, _useLocking, _remoteStoreName, _remoteRetryInterval, _maxRemoteRetries);
     }
 
     /**
@@ -62,9 +64,11 @@ public class ScaleoutHttpSessionConfiguration extends SpringHttpSessionConfigura
     public void setImportMetadata(AnnotationMetadata importMetadata) {
         Map<String, Object> annotationValueMap = importMetadata.getAnnotationAttributes(EnableScaleoutHttpSession.class.getName());
         AnnotationAttributes attributes = AnnotationAttributes.fromMap(annotationValueMap);
-        _cacheName = attributes.getString("cacheName");
-        _maxInactiveTime = attributes.getNumber("maxInactiveTimeMinutes");
-        _useLocking = attributes.getBoolean("useLocking");
-        _remoteStoreName = attributes.getString("remoteStoreName");
+        _cacheName              = attributes.getString("cacheName");
+        _maxInactiveTime        = attributes.getNumber("maxInactiveTimeMinutes");
+        _useLocking             = attributes.getBoolean("useLocking");
+        _remoteStoreName        = attributes.getString("remoteStoreName");
+        _remoteRetryInterval    = attributes.getNumber("remoteReadPendingRetryInterval");
+        _maxRemoteRetries       = attributes.getNumber("maxRemoteReadRetries");
     }
 }

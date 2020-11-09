@@ -98,6 +98,9 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
      * @param cacheName the cache name to store {@link org.springframework.session.soss.ScaleoutSession}s
      * @param maxInactiveTime the max inactive time of a session
      * @param useLocking if the scaleout repository is using locking
+	 * @param remoteStoreName the name of the remote store (used for GeoServer Pro pull replication).
+	 * @param remoteReadPendingInterval in case of a WAN failure, the interval in ms to wait when a remote read is pending
+	 * @param remoteReadRetries in case of a WAN failure, the number of times to retry a remote read
      */
     public ScaleoutSessionRepository(String cacheName, Duration maxInactiveTime, boolean useLocking, String remoteStoreName, int remoteReadPendingInterval, int remoteReadRetries) {
         _maxInactiveTime = maxInactiveTime;

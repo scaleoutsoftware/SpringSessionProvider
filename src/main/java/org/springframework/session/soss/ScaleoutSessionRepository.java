@@ -36,6 +36,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -68,39 +69,73 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
      * Default locking value.
      */
     public static final boolean DEF_USE_LOCKING = true;
+    /**
+     * default remote read-pending retry interval.
+     */
+    public static final int DEF_REMOTE_READPENDING_RETRY_INTERVAL = 10;
+    /**
+     * default remote read-pending retries.
+     */
+    public static final int DEF_REMOTE_READPENDING_RETRIES = 2400;
 
     // the NamedCache to use for query
-    private NamedCache _cache;
+    private final NamedCache _cache;
 
     // helper objects for locking
-    private ConcurrentHashMap<String, DataAccessor> _sessionAccessors;
-    private HashSet<ReadOptions> _readOptions;
+    private final ConcurrentHashMap<String, DataAccessor> _sessionAccessors;
+    private final HashSet<ReadOptions> _readOptions;
+    private final CreatePolicy _createPolicy;
 
     // private member configuration variables
-    private Duration _maxInactiveTime;
-    private boolean _useLocking;
+    private final Duration _maxInactiveTime;
+    private final boolean _useLocking;
+    private final int _remoteReadPendingInterval;
+    private final int _remoteReadPendingRetries;
+
 
     /**
      * Instantiates the ScaleOutSessionRepository.
      * @param cacheName the cache name to store {@link org.springframework.session.soss.ScaleoutSession}s
      * @param maxInactiveTime the max inactive time of a session
      * @param useLocking if the scaleout repository is using locking
+	 * @param remoteStoreName the name of the remote store (used for GeoServer Pro pull replication).
+	 * @param remoteReadPendingInterval in case of a WAN failure, the interval in ms to wait when a remote read is pending
+	 * @param remoteReadRetries in case of a WAN failure, the number of times to retry a remote read
      */
-    public ScaleoutSessionRepository(String cacheName, Duration maxInactiveTime, boolean useLocking) {
+    public ScaleoutSessionRepository(String cacheName, Duration maxInactiveTime, boolean useLocking, String remoteStoreName, int remoteReadPendingInterval, int remoteReadRetries) {
         _maxInactiveTime = maxInactiveTime;
         _useLocking = useLocking;
         _sessionAccessors = new ConcurrentHashMap<>();
+        _remoteReadPendingInterval = remoteReadPendingInterval;
+        _remoteReadPendingRetries = remoteReadRetries;
 
-        // creates a new set of read options for a DataAccessor that uses locking
+        // setup a new create policy
+        _createPolicy = new CreatePolicy();
+        _createPolicy.setTimeout(TimeSpan.fromMinutes(maxInactiveTime.toMinutes()));
+        if(remoteStoreName != null) {
+            _createPolicy.setDefaultCoherencyPolicy(new NotifyCoherencyPolicy());
+        }
+
+        // setup a new set of read options for a DataAccessor that uses locking
         _readOptions = new HashSet<>();
         _readOptions.add(ReadOptions.ObjectMayNotExist); // don't throw "ObjectNotFound" exceptions -- return null.
         _readOptions.add(ReadOptions.ReturnCachedObjectIfValid); // use the client cache
-        if(_useLocking)
+        if(remoteStoreName != null) {
+            _readOptions.add(ReadOptions.ReadRemoteObject);
+        }
+
+        if(_useLocking) {
             _readOptions.add(ReadOptions.LockObject); // if the object exists, lock the object
+        }
 
         try {
             _cache = CacheFactory.getCache(cacheName);
             StateServerKey.setDefaultAppId(StateServerKey.appNameToId(cacheName));
+            if(remoteStoreName != null) {
+                List<RemoteStore> stores = new LinkedList<>();
+                stores.add(new RemoteStore(remoteStoreName));
+                _cache.setRemoteStores(stores);
+            }
         } catch (StateServerException e) {
             logger.error("Couldn't create namespace.");
             throw new RuntimeException(e);
@@ -220,6 +255,7 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
 
     // private helper method to retrieve a session
     private ScaleoutSession retrieveSession(String id) {
+        int remoteReadAttempt = 0;
 	    // create or retrieve a DA
         DataAccessor da = null;
         if(_useLocking) {
@@ -234,10 +270,13 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
         ReadResult readResult = null;
         do {
             try {
-                readResult = da.read(_readOptions);
+                if(da != null)
+                    readResult = da.read(_readOptions);
             } catch (ObjectLockedException ole) {
-                // If the object is locked, it means two threads tried to retrieve the same session and the other thread
-                // won. So, we will retrieve the correct DA and retry.
+                // If the object is locked, it means two threads tried to retrieve the same session and some other thread
+                // won. In case the other thread is local to this client, we will retrieve the correct DA and retry.
+                // If another client won (i.e. some other instance of the session repository has the lock), we will keep
+                // re-trying the read until we can successfully read and lock the session.
                 if(_useLocking) {
                     DataAccessor tempDa = _sessionAccessors.get(id);
                     if (tempDa != null) {
@@ -248,13 +287,28 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
                     logger.error(ole);
                     return null;
                 }
-            } catch (StateServerException e) {
+            } catch (ReadThroughPendingException rtpe) {
+                // If a read through pending exception is thrown, it means the session is on a remote store and the
+                // local store is in process of pulling the object to the local store. In this case, we simply retry the
+                // read and lock according to the configured number of retries and retry interval.
+                remoteReadAttempt++;
+                if (remoteReadAttempt >= _remoteReadPendingRetries) {
+                    logger.error("read through pending timed-out.");
+                    return null;
+                } else
+                    try {
+                        Thread.sleep(_remoteReadPendingInterval);
+                    } catch (InterruptedException e1) {
+                        throw new RuntimeException("Unexpected error while waiting to retry");
+                    }
+            }
+            catch (StateServerException e) {
                 logger.error(e);
                 return null;
             }
         } while(readResult == null);
 
-        // read completed -- and the object is potentially locked -- any exception from this point on means we need to
+        // read completed -- and if locking is enabled, the object is locked -- any exception from this point on means we need to
         // release the lock (IOException, or ClassCastException). The finally block is used for lock cleanup and
         // keeping track of the DA that holds the correct lock ticket.
         boolean releaseLock = false;
@@ -292,6 +346,7 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
 
     // private helper method to create a DA
     private DataAccessor getDA(String id) {
+        if(id == null) return null;
         try {
             StateServerKey key = new StateServerKey(hashStringKey(id));
             key.setKeyString(id);
@@ -310,7 +365,8 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
         try {
             DataAccessor da = getDA(session.getId());
             session.markTouched();
-            da.create((int)_maxInactiveTime.toMinutes(), session);
+            if(da != null)
+                da.create(_createPolicy, session);
         } catch (ObjectExistsException oee) {
             logger.warn(oee);
             saveExistingSession(session);
@@ -332,7 +388,7 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
 
 
             do {
-                // if we're updating a session, that means we've found an existing session (i.e. session.isNew() == false).
+                // If we're updating a session, that means we've found an existing session (i.e. session.isNew() == false).
                 // so, we need to retrieve the DA we used to retrieve the session
                 if(_useLocking) {
                     da = _sessionAccessors.get(session.getId());
@@ -348,9 +404,11 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
 
                 // it's always safe to call update and unlock even when locking is disabled or we don't have a lock ticket
                 try {
-                    da.update(session, true);
-                    removeSessionAccessor = true;
-                    break;
+                    if(da != null) {
+                        da.update(session, true);
+                        removeSessionAccessor = true;
+                        break;
+                    }
                 } catch(ObjectLockedException ole) { logger.warn("object locked, retrying."); }
             } while(true);
 

@@ -76,16 +76,13 @@ Note, locking required if GeoServer pull enabled.
 
 Default value: ``` true ``` 
 
-
-The following configuration parameter is only used if GeoServer pro is licensed and configured.
-
 #### remoteStoreName
 
-The ``` remoteStoreName ``` parameter tells the ScaleoutSessionRepository to create objects with the GeoServer notify policy and push creates and updates to a remote store with the parameter name.
+The ``` remoteStoreName ``` parameter tells the ScaleoutSessionRepository to create objects with the GeoServer notify coherency policy and push creates and updates to a remote store specified by the parameter name. When two ScaleOut StateServer stores are configured for bi-directional pull replication using ScaleOut GeoServer Pro, this enables object updates to be replicated between both stores while allowing synchronized access to the objects.
 
-Note, the ``` useLocking ``` parameter must be set to true.
+Note, the useLocking parameter must be set to true.
 
-Note, GeoServer pro licensed separately from ScaleOut StateServer.   
+Note, ScaleOut GeoServer® Pro is licensed separately from ScaleOut StateServer.
 
 Default value: ``` null (unused) ```
 

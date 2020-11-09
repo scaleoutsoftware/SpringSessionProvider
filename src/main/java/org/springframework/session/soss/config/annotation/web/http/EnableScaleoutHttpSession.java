@@ -52,7 +52,7 @@ public @interface EnableScaleoutHttpSession {
     boolean useLocking() default ScaleoutSessionRepository.DEF_USE_LOCKING;
 
     /**
-     * If GeoServer pull is licensed and configured, setting the value for remoteStoreName indicates that replica objects
+     * If ScaleOut GeoServer Pro is licensed and configured, setting the value for remoteStoreName indicates that replica objects
      * in a remote store should be notified every time the local, master object is updated.
      * @return the remote store name (Must have GeoServer Pro licensed.)
      */
@@ -64,7 +64,7 @@ public @interface EnableScaleoutHttpSession {
      * The {@link EnableScaleoutHttpSession#remoteReadPendingRetryInterval()} can be used to set the interval to wait
      * when performing a read from a remote store in case a WAN error occurs.
      *
-     * If GeoServer pull is licensed and configured, when performing a remote read of an object from a another store via
+     * If ScaleOut GeoServer Pro is licensed and configured, when performing a remote read of an object from a another store via
      * GeoServer pull replication, the {@link ScaleoutSessionRepository} may need to repeatedly attempt to
      * perform the remote read in a number of situations (for example, the master copy of the object may be in transit to
      * a different remote store, or another thread in this client may already be trying to perform a remote read and is
@@ -79,7 +79,7 @@ public @interface EnableScaleoutHttpSession {
      * The {@link EnableScaleoutHttpSession#maxRemoteReadRetries()} can be used to set the maximum number of retries
      * the {@link ScaleoutSessionRepository} will exhaust before throwing a CantAccessException.
      *
-     * If GeoServer pull is licensed and configured, when performing a remote read of an object from a another store
+     * If ScaleOut GeoServer Pro is licensed and configured, when performing a remote read of an object from a another store
      * via GeoServer pull replication, the {@link ScaleoutSessionRepository} may need to repeatedly attempt to
      * perform the remote read in a number of situations (for example, the master copy of the object may be in transit
      * to a different remote store, or another thread in this client may already be trying to perform a remote read and

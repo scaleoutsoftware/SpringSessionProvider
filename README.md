@@ -24,7 +24,7 @@ repositories {
 ...and then you can add the ScaleOut Spring Session API as a dependency:
 
 ```
-compile group: 'com.scaleoutsoftware.spring', name: "session", version: '2.0'
+compile group: 'com.scaleoutsoftware.spring', name: "session", version: '2.1'
 ```
 
 ### Maven
@@ -45,7 +45,7 @@ For Maven, you can add the ScaleOut API Repository to your pom.xml by adding the
 	<dependency>
 	  <groupId>com.scaleoutsoftware.spring</groupId>
 	  <artifactId>session</artifactId>
-	  <version>2.0</version>
+	  <version>2.1</version>
 	</dependency>
 </dependencies>
 ```

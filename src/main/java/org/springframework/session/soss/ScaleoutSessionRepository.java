@@ -78,6 +78,11 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
      */
     public static final int DEF_REMOTE_READPENDING_RETRIES = 2400;
 
+    /**
+     *
+     */
+    public static final String DEF_UNASSIGNED = "UNASSIGNED";
+
     // the NamedCache to use for query
     private final NamedCache _cache;
 
@@ -112,7 +117,7 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
         // setup a new create policy
         _createPolicy = new CreatePolicy();
         _createPolicy.setTimeout(TimeSpan.fromMinutes(maxInactiveTime.toMinutes()));
-        if(remoteStoreName != null) {
+        if(remoteStoreName.compareTo(ScaleoutSessionRepository.DEF_UNASSIGNED) != 0) {
             _createPolicy.setDefaultCoherencyPolicy(new NotifyCoherencyPolicy());
         }
 
@@ -120,7 +125,7 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
         _readOptions = new HashSet<>();
         _readOptions.add(ReadOptions.ObjectMayNotExist); // don't throw "ObjectNotFound" exceptions -- return null.
         _readOptions.add(ReadOptions.ReturnCachedObjectIfValid); // use the client cache
-        if(remoteStoreName != null) {
+        if(remoteStoreName.compareTo(ScaleoutSessionRepository.DEF_UNASSIGNED) != 0) {
             _readOptions.add(ReadOptions.ReadRemoteObject);
         }
 
@@ -131,7 +136,7 @@ public class ScaleoutSessionRepository implements FindByIndexNameSessionReposito
         try {
             _cache = CacheFactory.getCache(cacheName);
             StateServerKey.setDefaultAppId(StateServerKey.appNameToId(cacheName));
-            if(remoteStoreName != null) {
+            if(remoteStoreName.compareTo(ScaleoutSessionRepository.DEF_UNASSIGNED) != 0) {
                 List<RemoteStore> stores = new LinkedList<>();
                 stores.add(new RemoteStore(remoteStoreName));
                 _cache.setRemoteStores(stores);

@@ -56,7 +56,7 @@ public @interface EnableScaleoutHttpSession {
      * in a remote store should be notified every time the local, master object is updated.
      * @return the remote store name (Must have GeoServer Pro licensed.)
      */
-    String remoteStoreName();
+    String remoteStoreName() default ScaleoutSessionRepository.DEF_UNASSIGNED;
 
     /**
      * Note, requires {@link EnableScaleoutHttpSession#remoteStoreName()} to have a value.
